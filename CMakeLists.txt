@@ -30,6 +30,23 @@ IF(OPENSSL_FOUND)
 ENDIF(OPENSSL_FOUND)
 
 if(UNIX) #this is true for all the linux systems but not for cross compiling "linux->windows"
+
+	execute_process(COMMAND lsb_release -is
+	  OUTPUT_VARIABLE DISTRO_NAME
+	  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  
+	execute_process(COMMAND lsb_release -rs
+	  OUTPUT_VARIABLE DISTRO_NUMBER
+	  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  
+	MESSAGE(STATUS, "DISTRO_NAME ${DISTRO_NAME}")
+	MESSAGE(STATUS, "DISTRO_NUMBER ${DISTRO_NUMBER}")
+	IF(DISTRO_NAME STREQUAL "Fedora")
+	  MESSAGE(STATUS "  Found Fedora")
+	ELSE()
+	  MESSAGE(STATUS "  Did NOT find Fedora")
+	ENDIF()
+
 	#openssl required for linux
 	IF(NOT OPENSSL_FOUND)
 		MESSAGE(SEND_ERROR "Openssl not found - generator - required in Linux")
@@ -49,7 +66,7 @@ if(UNIX) #this is true for all the linux systems but not for cross compiling "li
 	endif(THREADS_HAVE_PTHREAD_ARG)
 	
 	#Zlib required when openssl version < 1.0.2k (centos 7)
-	IF(OPENSSL_VERSION VERSION_LESS_EQUAL 1.0.2)
+	IF((OPENSSL_VERSION VERSION_LESS_EQUAL 1.0.2) OR (DISTRO_NAME STREQUAL "Fedora"))
 		SET ( ZLIB_USE_STATIC_LIBS ON ) 
 		find_package(ZLIB REQUIRED)
 		list(APPEND EXTERNAL_LIBS ${ZLIB_LIBRARIES})
